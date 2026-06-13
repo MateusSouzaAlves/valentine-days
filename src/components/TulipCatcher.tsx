@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import InviteCard from './InviteCard';
 import styles from './TulipCatcher.module.css';
 
@@ -16,49 +16,47 @@ interface TulipCatcherProps {
   gameCompleted: boolean;
 }
 
-export default function TulipCatcher({ onComplete, gameCompleted }: TulipCatcherProps) {
+const TARGET_SCORE = 8;
+const celebrationSymbols = ['💕', '❤️', '🌷', '✨', '🎉'];
+
+export default function TulipCatcher({ onComplete }: TulipCatcherProps) {
   const [gameStarted, setGameStarted] = useState(false);
   const [score, setScore] = useState(0);
   const [tulips, setTulips] = useState<Tulip[]>([]);
   const [showVictory, setShowVictory] = useState(false);
-  const [confetti, setConfetti] = useState<Array<{ id: number; x: number; y: number }>>([]);
+  const [confetti, setConfetti] = useState<Array<{ id: number; x: number; y: number; symbol: string }>>([]);
   const gameAreaRef = useRef<HTMLDivElement>(null);
   const nextIdRef = useRef(0);
   const animationFrameRef = useRef<number>();
-
-  const TARGET_SCORE = 10;
 
   useEffect(() => {
     if (gameStarted && score < TARGET_SCORE) {
       const spawnTulip = () => {
         const newTulip: Tulip = {
           id: nextIdRef.current++,
-          x: Math.random() * 85 + 5, // 5-90% to keep within bounds with padding
+          x: Math.random() * 82 + 6,
           y: -10,
-          speed: 0.3 + Math.random() * 1, // Much slower: 0.3 to 0.7
+          speed: 0.34 + Math.random() * 0.62,
         };
-        setTulips(prev => [...prev, newTulip]);
+        setTulips((prev) => [...prev, newTulip]);
       };
 
-      // Spawn tulips less frequently
-      const spawnInterval = setInterval(spawnTulip, 400);
+      const spawnInterval = setInterval(spawnTulip, 430);
 
-      // Animation loop for moving tulips (throttled)
       let lastTime = Date.now();
       const animate = () => {
         const now = Date.now();
         const delta = now - lastTime;
-        
-        // Update every 16ms (roughly 60fps) but with slower movement
+
         if (delta > 16) {
-          setTulips(prev => {
-            return prev
-              .map(tulip => ({ ...tulip, y: tulip.y + tulip.speed }))
-              .filter(tulip => tulip.y < 110); // Remove tulips that went off screen
-          });
+          setTulips((prev) =>
+            prev
+              .map((tulip) => ({ ...tulip, y: tulip.y + tulip.speed }))
+              .filter((tulip) => tulip.y < 110),
+          );
           lastTime = now;
         }
-        
+
         animationFrameRef.current = requestAnimationFrame(animate);
       };
 
@@ -77,25 +75,25 @@ export default function TulipCatcher({ onComplete, gameCompleted }: TulipCatcher
     if (score >= TARGET_SCORE && !showVictory) {
       setShowVictory(true);
       onComplete();
-      // Create confetti
-      const newConfetti = Array.from({ length: 50 }, (_, i) => ({
-        id: i,
-        x: Math.random() * 100,
-        y: Math.random() * 100,
-      }));
-      setConfetti(newConfetti);
+      setConfetti(
+        Array.from({ length: 50 }, (_, i) => ({
+          id: i,
+          x: Math.random() * 100,
+          y: Math.random() * 100,
+          symbol: celebrationSymbols[i % celebrationSymbols.length],
+        })),
+      );
     }
   }, [score, showVictory, onComplete]);
 
   const handleTulipClick = (tulipId: number, e: React.MouseEvent | React.TouchEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    setTulips(prev => prev.filter(t => t.id !== tulipId));
-    setScore(prev => prev + 1);
-    
-    // Haptic feedback on mobile
+    setTulips((prev) => prev.filter((t) => t.id !== tulipId));
+    setScore((prev) => Math.min(prev + 1, TARGET_SCORE));
+
     if ('vibrate' in navigator) {
-      navigator.vibrate(50);
+      navigator.vibrate(35);
     }
   };
 
@@ -118,17 +116,17 @@ export default function TulipCatcher({ onComplete, gameCompleted }: TulipCatcher
     return (
       <section className={styles.gameSection}>
         <div className={styles.confettiContainer}>
-          {confetti.map(c => (
+          {confetti.map((c) => (
             <div
               key={c.id}
               className={styles.confetti}
               style={{
                 left: `${c.x}%`,
                 top: `${c.y}%`,
-                animationDelay: `${Math.random() * 0.5}s`,
+                animationDelay: `${(c.id % 6) * 0.08}s`,
               }}
             >
-              {['💕', '❤️', '🌷', '✨', '🎉'][Math.floor(Math.random() * 5)]}
+              {c.symbol}
             </div>
           ))}
         </div>
@@ -141,22 +139,22 @@ export default function TulipCatcher({ onComplete, gameCompleted }: TulipCatcher
     <section className={styles.gameSection}>
       <div className={styles.container}>
         <div className={styles.gameHeader}>
-          <h2>A Little Game for You 🌷</h2>
-          <p>Catch {TARGET_SCORE} falling tulips to reveal something special!</p>
+          <h2>Um joguinho para a Juliana 🌷</h2>
+          <p>Toque em {TARGET_SCORE} tulipas para abrir uma surpresa do Mateus.</p>
         </div>
 
         {!gameStarted ? (
           <div className={styles.startScreen}>
             <div className={styles.startCard}>
               <div className={styles.gameIcon}>🎮</div>
-              <h3>How to Play</h3>
+              <h3>Como jogar</h3>
               <ul className={styles.instructions}>
-                <li>🌷 Tap the falling tulips to catch them</li>
-                <li>🎯 Catch {TARGET_SCORE} tulips to win</li>
-                <li>⏱️ Don't let them fall off the screen!</li>
+                <li>🌷 Toque nas tulipas antes que elas caiam.</li>
+                <li>🎯 Pegue {TARGET_SCORE} tulipas para vencer.</li>
+                <li>💌 A surpresa aparece no final.</li>
               </ul>
               <button className="btn-primary" onClick={startGame}>
-                Start Game
+                Começar jogo
               </button>
             </div>
           </div>
@@ -164,19 +162,18 @@ export default function TulipCatcher({ onComplete, gameCompleted }: TulipCatcher
           <>
             <div className={styles.scoreBoard}>
               <div className={styles.scoreBadge}>
-                <span className={styles.scoreLabel}>Score:</span>
-                <span className={styles.scoreValue}>{score} / {TARGET_SCORE}</span>
+                <span className={styles.scoreLabel}>Pontuação</span>
+                <span className={styles.scoreValue}>
+                  {score} / {TARGET_SCORE}
+                </span>
               </div>
               <div className={styles.progressBar}>
-                <div 
-                  className={styles.progressFill}
-                  style={{ width: `${(score / TARGET_SCORE) * 100}%` }}
-                ></div>
+                <div className={styles.progressFill} style={{ width: `${(score / TARGET_SCORE) * 100}%` }}></div>
               </div>
             </div>
 
             <div className={styles.gameArea} ref={gameAreaRef}>
-              {tulips.map(tulip => (
+              {tulips.map((tulip) => (
                 <button
                   key={tulip.id}
                   className={styles.tulip}
@@ -186,17 +183,13 @@ export default function TulipCatcher({ onComplete, gameCompleted }: TulipCatcher
                   }}
                   onClick={(e) => handleTulipClick(tulip.id, e)}
                   onTouchStart={(e) => handleTulipClick(tulip.id, e)}
-                  aria-label="Catch tulip"
+                  aria-label="Pegar tulipa"
                 >
                   🌷
                 </button>
               ))}
-              
-              {tulips.length === 0 && (
-                <div className={styles.waitingMessage}>
-                  Get ready! Tulips are coming... 🌷
-                </div>
-              )}
+
+              {tulips.length === 0 && <div className={styles.waitingMessage}>Preparando as tulipas...</div>}
             </div>
           </>
         )}

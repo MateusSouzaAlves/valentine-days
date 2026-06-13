@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useRef, useState } from 'react';
 import Image from 'next/image';
 import loveConfig from '@/config/loveConfig';
 import styles from './InviteCard.module.css';
@@ -16,13 +16,11 @@ export default function InviteCard({ onPlayAgain }: InviteCardProps) {
   const containerRef = useRef<HTMLDivElement>(null);
 
   const handleYesClick = () => {
-    // Show celebration modal or directly trigger actions
-    alert('🎉 Yay! I knew you would say yes... I can\'t wait to celebrate with you!! 💕');
+    alert('Eu sabia! Feliz Dia dos Namorados, meu amor. Te amo! 💕');
   };
 
   const handleNoClick = () => {
-    // Optional: Show a sad message or do nothing
-    console.log('Trying to click No... 😏');
+    console.log('Tentou clicar em não...');
   };
 
   const moveNoButton = (cursorX: number, cursorY: number) => {
@@ -32,31 +30,22 @@ export default function InviteCard({ onPlayAgain }: InviteCardProps) {
     const buttonCenterX = buttonRect.left + buttonRect.width / 2;
     const buttonCenterY = buttonRect.top + buttonRect.height / 2;
 
-    // Calculate distance from cursor to button center
-    const distance = Math.sqrt(
-      Math.pow(cursorX - buttonCenterX, 2) + 
-      Math.pow(cursorY - buttonCenterY, 2)
-    );
+    const distance = Math.sqrt(Math.pow(cursorX - buttonCenterX, 2) + Math.pow(cursorY - buttonCenterY, 2));
 
-    // If cursor is within 150px, move the button away
     if (distance < 150) {
       if (!isNoButtonEscaping) {
         setIsNoButtonEscaping(true);
       }
 
-      // Calculate direction away from cursor
       const angle = Math.atan2(buttonCenterY - cursorY, buttonCenterX - cursorX);
-      
-      // Move button 400px away in that direction (fast escape!)
-      const moveDistance = 400;
+      const moveDistance = 360;
       let newX = buttonRect.left + Math.cos(angle) * moveDistance;
       let newY = buttonRect.top + Math.sin(angle) * moveDistance;
 
-      // Keep button within viewport bounds
-      const padding = 40;
+      const padding = 24;
       const maxX = window.innerWidth - buttonRect.width - padding;
       const maxY = window.innerHeight - buttonRect.height - padding;
-      
+
       newX = Math.max(padding, Math.min(newX, maxX));
       newY = Math.max(padding, Math.min(newY, maxY));
 
@@ -74,85 +63,27 @@ export default function InviteCard({ onPlayAgain }: InviteCardProps) {
     }
   };
 
-  const handleAddToCalendar = () => {
-    // Generate .ics file content
-    const event = {
-      title: `Valentine's Day with ${loveConfig.yourName}`,
-      description: loveConfig.inviteMessage,
-      location: loveConfig.inviteLocation,
-      startDate: new Date(loveConfig.valentineDate + 'T19:00:00+08:00'), // 7:00 PM Singapore time
-      endDate: new Date(loveConfig.valentineDate + 'T23:00:00+08:00'),
-    };
-
-    const formatDate = (date: Date) => {
-      return date.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
-    };
-
-    const icsContent = `BEGIN:VCALENDAR
-VERSION:2.0
-PRODID:-//Valentine's Day//EN
-BEGIN:VEVENT
-UID:${Date.now()}@valentines2026
-DTSTAMP:${formatDate(new Date())}
-DTSTART:${formatDate(event.startDate)}
-DTEND:${formatDate(event.endDate)}
-SUMMARY:${event.title}
-DESCRIPTION:${event.description}
-LOCATION:${event.location}
-STATUS:CONFIRMED
-SEQUENCE:0
-BEGIN:VALARM
-TRIGGER:-PT2H
-ACTION:DISPLAY
-DESCRIPTION:Reminder: Valentine's Date in 2 hours!
-END:VALARM
-END:VEVENT
-END:VCALENDAR`;
-
-    // Create blob and download
-    const blob = new Blob([icsContent], { type: 'text/calendar' });
-    const url = window.URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = 'valentines-date-2026.ics';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    window.URL.revokeObjectURL(url);
-  };
-
-  const handleSendAnswer = () => {
-    const subject = encodeURIComponent(loveConfig.emailSubject);
-    const body = encodeURIComponent(loveConfig.emailBody + loveConfig.partnerName);
-    window.location.href = `mailto:${loveConfig.yourEmail}?subject=${subject}&body=${body}`;
-  };
-
   return (
-    <div 
-      className={styles.inviteContainer}
-      ref={containerRef}
-      onMouseMove={handleMouseMove}
-      onTouchMove={handleTouchMove}
-    >
+    <div className={styles.inviteContainer} ref={containerRef} onMouseMove={handleMouseMove} onTouchMove={handleTouchMove}>
       <div className={styles.inviteCard}>
         <h2 className={styles.inviteTitle}>{loveConfig.inviteTitle}</h2>
-        
-        <div className={styles.catRoseContainer}>
-          <Image 
-            src="/cat-rose.gif" 
-            alt="Cat with rose"
-            width={200}
-            height={200}
-            className={styles.catRoseGif}
-            unoptimized
+
+        <div className={styles.invitePhotoContainer}>
+          <Image
+            src={loveConfig.invitePhoto}
+            alt="Mateus e Juliana sorrindo juntos"
+            width={420}
+            height={520}
+            className={styles.invitePhoto}
+            priority
           />
         </div>
-        
+
         <div className={styles.inviteDetails}>
           <div className={styles.detailItem}>
             <span className={styles.detailIcon}>📅</span>
             <div>
-              <div className={styles.detailLabel}>Date</div>
+              <div className={styles.detailLabel}>Data</div>
               <div className={styles.detailValue}>{loveConfig.inviteDate}</div>
             </div>
           </div>
@@ -160,7 +91,7 @@ END:VCALENDAR`;
           <div className={styles.detailItem}>
             <span className={styles.detailIcon}>🕐</span>
             <div>
-              <div className={styles.detailLabel}>Time</div>
+              <div className={styles.detailLabel}>Hora</div>
               <div className={styles.detailValue}>{loveConfig.inviteTime}</div>
             </div>
           </div>
@@ -168,7 +99,7 @@ END:VCALENDAR`;
           <div className={styles.detailItem}>
             <span className={styles.detailIcon}>📍</span>
             <div>
-              <div className={styles.detailLabel}>Location</div>
+              <div className={styles.detailLabel}>Lugar</div>
               <div className={styles.detailValue}>{loveConfig.inviteLocation}</div>
             </div>
           </div>
@@ -177,14 +108,11 @@ END:VCALENDAR`;
         <p className={styles.inviteMessage}>{loveConfig.inviteMessage}</p>
 
         <div className={styles.actionButtons}>
-          <button 
-            className={`btn-primary ${styles.yesButton}`}
-            onClick={handleYesClick}
-          >
-            Yes! I'd Love To! 💕
+          <button className={`btn-primary ${styles.yesButton}`} onClick={handleYesClick}>
+            Sim, meu amor! 💕
           </button>
 
-          <button 
+          <button
             ref={noButtonRef}
             className={`btn-secondary ${styles.noButton} ${isNoButtonEscaping ? styles.noButtonEscaping : ''}`}
             style={{
@@ -196,32 +124,14 @@ END:VCALENDAR`;
             }}
             onClick={handleNoClick}
           >
-            No 😢
+            Não 😢
           </button>
 
-          <div className={styles.secondaryActions}>
-            <button 
-              className="btn-secondary"
-              onClick={handleAddToCalendar}
-            >
-              📅 Add to Calendar
-            </button>
-
-            <button 
-              className="btn-secondary"
-              onClick={handleSendAnswer}
-            >
-              💌 Send My Answer
-            </button>
-          </div>
         </div>
 
         <div className={styles.playAgainSection}>
-          <button 
-            className={styles.playAgainButton}
-            onClick={onPlayAgain}
-          >
-            🎮 Play Game Again
+          <button className={styles.playAgainButton} onClick={onPlayAgain}>
+            🎮 Jogar de novo
           </button>
         </div>
       </div>

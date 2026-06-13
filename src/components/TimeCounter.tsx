@@ -19,11 +19,8 @@ export default function TimeCounter() {
     setMounted(true);
 
     const calculateTimeLeft = () => {
-      // Parse the relationship start date (Singapore timezone)
       const startDate = new Date(loveConfig.relationshipStart);
       const now = new Date();
-      
-      // Calculate difference in milliseconds
       const difference = now.getTime() - startDate.getTime();
 
       if (difference > 0) {
@@ -38,10 +35,7 @@ export default function TimeCounter() {
       return { days: 0, hours: 0, minutes: 0, seconds: 0 };
     };
 
-    // Initial calculation
     setTimeLeft(calculateTimeLeft());
-
-    // Update every second
     const timer = setInterval(() => {
       setTimeLeft(calculateTimeLeft());
     }, 1000);
@@ -50,7 +44,7 @@ export default function TimeCounter() {
   }, []);
 
   if (!mounted) {
-    return null; // Prevent hydration mismatch
+    return null;
   }
 
   return (
@@ -58,40 +52,36 @@ export default function TimeCounter() {
       <div className={styles.container}>
         <div className={styles.content}>
           <div className={styles.icon}>⏰</div>
-          <h2 className={styles.title}>Time We've Shared</h2>
-          <p className={styles.subtitle}>
-            Every second with you is a treasure
-          </p>
+          <h2 className={styles.title}>{loveConfig.counterTitle}</h2>
+          <p className={styles.subtitle}>{loveConfig.counterSubtitle}</p>
 
           <div className={styles.counterGrid}>
             <div className={styles.timeBox}>
               <div className={styles.timeValue}>{timeLeft.days}</div>
-              <div className={styles.timeLabel}>Days</div>
+              <div className={styles.timeLabel}>Dias</div>
               <div className={styles.timeIcon}>📅</div>
             </div>
 
             <div className={styles.timeBox}>
               <div className={styles.timeValue}>{timeLeft.hours}</div>
-              <div className={styles.timeLabel}>Hours</div>
+              <div className={styles.timeLabel}>Horas</div>
               <div className={styles.timeIcon}>🕐</div>
             </div>
 
             <div className={styles.timeBox}>
               <div className={styles.timeValue}>{timeLeft.minutes}</div>
-              <div className={styles.timeLabel}>Minutes</div>
+              <div className={styles.timeLabel}>Minutos</div>
               <div className={styles.timeIcon}>⏱️</div>
             </div>
 
             <div className={styles.timeBox}>
               <div className={styles.timeValue}>{timeLeft.seconds}</div>
-              <div className={styles.timeLabel}>Seconds</div>
-              <div className={styles.timeIcon}>⚡</div>
+              <div className={styles.timeLabel}>Segundos</div>
+              <div className={styles.timeIcon}>✨</div>
             </div>
           </div>
 
-          <p className={styles.message}>
-            ...and counting! Here's to infinity more moments together💕
-          </p>
+          <p className={styles.message}>{loveConfig.counterMessage}</p>
         </div>
       </div>
     </section>

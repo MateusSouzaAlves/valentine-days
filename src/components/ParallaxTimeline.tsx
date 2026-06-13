@@ -1,11 +1,12 @@
 'use client';
 
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import loveConfig from '@/config/loveConfig';
 import styles from './ParallaxTimeline.module.css';
 
 interface PhotoItem {
   src: string;
+  alt: string;
   milestone: typeof loveConfig.milestones[0];
   index: number;
 }
@@ -14,15 +15,15 @@ export default function ParallaxTimeline() {
   const [visibleItems, setVisibleItems] = useState<Set<number>>(new Set());
   const itemRefs = useRef<(HTMLDivElement | null)[]>([]);
 
-  // Generate photo items by pairing photos with milestones
-  const photoItems: PhotoItem[] = Array.from({ length: loveConfig.photoCount }, (_, i) => ({
-    src: `/photos/photo_${i + 1}.jpg`,
+  const photoItems: PhotoItem[] = loveConfig.photos.slice(0, loveConfig.photoCount).map((photo, i) => ({
+    src: photo.src,
+    alt: photo.alt,
     milestone: loveConfig.milestones[i] || {
-      title: 'Beautiful Memory',
-      date: 'Our Journey',
-      description: 'Every moment with you is a treasure.'
+      title: 'Uma memória bonita',
+      date: 'Nossa história',
+      description: 'Cada momento com você é um presente.',
     },
-    index: i
+    index: i,
   }));
 
   useEffect(() => {
@@ -35,14 +36,14 @@ export default function ParallaxTimeline() {
         (entries) => {
           entries.forEach((entry) => {
             if (entry.isIntersecting) {
-              setVisibleItems(prev => new Set(prev).add(index));
+              setVisibleItems((prev) => new Set(prev).add(index));
             }
           });
         },
         {
-          threshold: 0.2,
-          rootMargin: '0px 0px -100px 0px'
-        }
+          threshold: 0.16,
+          rootMargin: '0px 0px -80px 0px',
+        },
       );
 
       observer.observe(ref);
@@ -50,7 +51,7 @@ export default function ParallaxTimeline() {
     });
 
     return () => {
-      observers.forEach(observer => observer.disconnect());
+      observers.forEach((observer) => observer.disconnect());
     };
   }, []);
 
@@ -63,37 +64,32 @@ export default function ParallaxTimeline() {
 
       <div className={styles.container}>
         <div className={styles.header}>
-          <h2>Our Love Story</h2>
-          <p>Every moment, a chapter in our beautiful journey together</p>
+          <h2>{loveConfig.timelineTitle}</h2>
+          <p>{loveConfig.timelineSubtitle}</p>
         </div>
 
         <div className={styles.timelineTrack}>
           {photoItems.map((item, index) => {
             const isEven = index % 2 === 0;
             const isVisible = visibleItems.has(index);
-            
+
             return (
               <div
-                key={index}
-                ref={el => { itemRefs.current[index] = el; }}
+                key={item.src}
+                ref={(el) => {
+                  itemRefs.current[index] = el;
+                }}
                 className={`${styles.timelineItem} ${isVisible ? styles.visible : ''} ${isEven ? styles.left : styles.right}`}
               >
                 <div className={styles.itemContent}>
-                  {/* Photo */}
                   <div className={styles.photoWrapper}>
                     <div className={styles.photoFrame}>
-                      <img 
-                        src={item.src} 
-                        alt={item.milestone.title}
-                        className={styles.photo}
-                        loading="lazy"
-                      />
+                      <img src={item.src} alt={item.alt} className={styles.photo} loading="lazy" />
                       <div className={styles.photoOverlay}></div>
                     </div>
                     <div className={styles.heartFloat}>💕</div>
                   </div>
 
-                  {/* Milestone info */}
                   <div className={styles.milestoneCard}>
                     <div className={styles.dateTag}>
                       <span className={styles.calendarIcon}>📅</span>
@@ -104,7 +100,6 @@ export default function ParallaxTimeline() {
                   </div>
                 </div>
 
-                {/* Timeline connector */}
                 <div className={styles.connector}>
                   <div className={styles.dot}></div>
                 </div>
